@@ -1,7 +1,5 @@
 /*
-        组通信MPI程序：test_13_3_1.c
-        收集MPI_Gather。
-        实现从进程组中的每个进程收集10个整型数送给根进程(进程0)。
+    Processor 0 will gather data from other processor.
 */
 #include "mpi.h"
 #include <stdio.h>
@@ -10,35 +8,48 @@
 #include <time.h>
 void main(int argc, char *argv[])
 {
-        int sendArray[10],size,myid;
-        int root=0,*rbuf;       /* rbuf用于在root进程中存储从各进程收集的数据 */
-        int i,n,m;
-        MPI_Init(&argc,&argv);
-        MPI_Comm_rank(MPI_COMM_WORLD,&myid);
-        MPI_Comm_size(MPI_COMM_WORLD,&size);
-        n=sizeof(sendArray)/sizeof(sendArray[0]);       /* sendArray数组元素个数 */
-        m=n*size;       /* rbuf中数据元素个数 */
-        /* 各进程中的数组sendArray赋初值：1~9之间的随机整数 */
+        int sendArray[1], size, myid;
+        /* rbuf is used to help root processor (processor 0) to gather data from other processors */
+        int root = 0, *rbuf;       
+        int i, n, m;
+        MPI_Init(&argc, &argv);
+        MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+        n = sizeof(sendArray) / sizeof(sendArray[0]);       /* number of elements in the sendArray[]*/
+        m = n * size;       /* number of elements in the receive buffer */
+        /* 
+           Generate random integer form 1 to 9,
+           then put it in sendArray of each processor.
+        */
         srand((unsigned)(time(NULL)+myid));
-        for(i=0;i<n;i++)
-           sendArray[i]=rand()%9+1;
-        if(myid==root)
-                rbuf=(int *)malloc(size*n*sizeof(int)); /* 动态分配内存 */
-        /* 收集：各进程（包括root进程本身）发送数组到root进程，
-           root进程用接收缓冲区rbuf接收这些数据 */
-        //这里的接收个数为n,而不是m
+        for(i = 0; i < n; i++) {
+           sendArray[i] = rand() % 9 + 1;
+        }
+        if(myid == root) {
+            /* Allocate memory to receive buffer dynamically. */
+            rbuf = (int *)malloc(size*n*sizeof(int)); 
+        }
+        /* 
+           Gather: Each processor (include root processor 0) pass data to root processor (processor 0).
+           Root processor use receive buffer (rbut) to gather these data.
+        */
+        // NOTICE: here the number of receiving should be n but not m.
         MPI_Gather(sendArray,n,MPI_INT,rbuf,n,MPI_INT,root,MPI_COMM_WORLD);
-        /* 打印各进程数组数据 */
-        fprintf(stderr,"\nProcess %d :",myid);
-        for(i=0;i<n;i++)
-                fprintf(stderr,"%d,",sendArray[i]);
-        MPI_Barrier(MPI_COMM_WORLD);    /* 同步 */
-        if (myid==root) /* root进程打印收集到的数据 */
+        /* Print data that each processor has sent. */
+        fprintf(stderr, "\nProcess %d :", myid);
+        for(i = 0; i < n; i++) {
+                fprintf(stderr, "%d ", sendArray[i]);
+        }
+        /* Syncronization: Wait until all the processors have sent data to root processor 0. */
+        MPI_Barrier(MPI_COMM_WORLD);  
+        /* Root processor 0 print what it has received. */  
+        if (myid == root) 
         {
-                fprintf(stderr,"\nAfter gathering data,Process %d :",myid);
-                for(i=0;i<m;i++)
-                        fprintf(stderr,"%d,",rbuf[i]);
-                free(rbuf);     /* 释放动态分配的内存 */
+            fprintf(stderr,"\nAfter gathering data,Process %d : ",myid);
+            for(i = 0; i < m; i++) {
+                fprintf(stderr, "%d  ", rbuf[i]);
+            }
+            free(rbuf);     /* Release the memory. */
         }
     MPI_Finalize();
 } 

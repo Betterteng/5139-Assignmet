@@ -7,7 +7,7 @@ int main(int argc,char *argv[])
 
         MPI_Init(&argc,&argv);
         /* Get processor tag and total number of processors */
-        MPI_Comm_rank(MPI_COMM_WORLDf,&rank);
+        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
         MPI_Comm_size(MPI_COMM_WORLD,&size);
 
         /* If number of processors is less than 4 */
@@ -24,7 +24,7 @@ int main(int argc,char *argv[])
         /* If number of processors is more than 3 */
         if (size >= 4) {
                 /* Print to remind user totol munber of processors is more than 3 */
-                fprintf(stderr, "This is fine." );
+                fprintf(stderr, "Processor: %d ->This is fine.\n", rank);
         }
         MPI_Finalize();
 }
