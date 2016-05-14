@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     // Prepare variables
     int location;
     long numberOfRounds = 0;
-    long numberOfStrikes = 0;
+    long totalNumberOfStrikes = 0;
     // single round time spent
     double eachRoundTime;
     // Track time
@@ -60,6 +60,11 @@ int main(int argc, char **argv) {
     
     // Enter loop, will execute for one minute
     while (1) {
+
+        // Make sure root process will end loop
+        if (timestamp > 5) {
+            break;
+        }
         // Location array
         short locationCount[TOTALLOCATIONS] = {0};
         // Buffer to send, also the global count
@@ -72,7 +77,6 @@ int main(int argc, char **argv) {
                 location = rand() % TOTALLOCATIONS;
                 locationCount[location] += 1;
             }
-
         }
 
         // Gather results using MPI_Reduce
@@ -82,29 +86,25 @@ int main(int argc, char **argv) {
         if (myId == 0) {
             // increment rounds count
             numberOfRounds += 1;
-            int launch_number = 0;
+            int numberOfStrikes = 0;
             // Loop through locations to calculate launches
             int i;
             for (i = 0; i < TOTALLOCATIONS; i++) {
                 if (globalCount[i] > 4) {
-                    launch_number++;
+                    numberOfStrikes++;
                 }
             }
             // sum up total launches over 1 minute
-            numberOfStrikes += launch_number;
+            totalNumberOfStrikes += numberOfStrikes;
             // Track time elapse
             timestamp = timeToMoveVessels + MPI_Wtime();
-            // Make sure root process will end loop
-            if (timestamp > 5) {
-                break;
-            }
+            
             eachRoundTime = timestamp - previousTimestamp;
             previousTimestamp = timestamp;
            
             printf("NO. Round %u -> Number of Strikes: %i, Timestamp: %lf\n",
-                   numberOfRounds, launch_number, timestamp);
+                   numberOfRounds, numberOfStrikes, timestamp);
         }
-
     }
 
     // Master
@@ -112,12 +112,10 @@ int main(int argc, char **argv) {
         printf("***************************************************************************\n");
         printf("*************************************************************\n");
         printf("*********************************************\n");
-        printf("Number of strikes = %'lu\n", numberOfStrikes);
+        printf("Number of strikes = %'lu\n", totalNumberOfStrikes);
         printf("*********************************************\n");
         printf("*************************************************************\n");
         printf("***************************************************************************\n");
-        // End all processes after printing all wanted results
-        //MPI_Abort(MPI_COMM_WORLD, 0);
     }
 
     MPI_Finalize();
