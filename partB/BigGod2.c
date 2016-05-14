@@ -116,14 +116,17 @@ int main(int argc, char **argv) {
      //MPI_Barrier(MPI_COMM_WORLD);
     // Master
     if (myId == 0) {
-        printf("=============================================\n");
-        //printf("Initialization Time = %lf\n", timeForInitialization);
-        //printf("Best Sampling Interval = %lf\n", best_round_time);
-        //printf("Total Sampling Rounds = %'u\n", num_round);
+        printf("***************************************************************************\n");
+        printf("*************************************************************\n");
+        printf("*********************************************\n");
         printf("Number of strikes = %'lu\n", total_launches);
+        printf("*********************************************\n");
+        printf("*************************************************************\n");
+        printf("***************************************************************************\n");
         // End all processes after printing all wanted results
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
 
-    return (0);
+    MPI_Finalize();
+    //return (0);
 }
