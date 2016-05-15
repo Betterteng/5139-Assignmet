@@ -18,13 +18,13 @@ int main(int argc, char **argv) {
     long numberOfRounds = 0;  /* Root processor can calculate which round is going on via this variable. */
     long totalNumberOfStrikes = 0;  /* Root processor can calculate how many strikes occurs via this variable. */
     double timeToMoveVessels;  /* The first timestamp after the initialization. */
-    double previousTimestamp;  /* Help to calculate timestamps that for printing on the terminal. */
+    double previousTimestamp;  /* Help calculate timestamps that for printing on the terminal. */
     double timestamp;  /* Use this variable to print timestamp of every round. */
     
     int myId, size; 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &myId);  /* Every processor gets its own rank ID. */
-    MPI_Comm_size(MPI_COMM_WORLD, &size);  /* Every processor konws the size of processors. */
+    MPI_Comm_size(MPI_COMM_WORLD, &size);  /* Every processor knows the size of processors. */
 
     srand(time(NULL) + myId); /* Prepare a seed to generate random number for slave processors. */
     
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    /* Syncronizaion: Wait until every processor complete the initialization. */
+    /* Synchronization: Wait until every processor complete the initialization. */
     MPI_Barrier(MPI_COMM_WORLD); 
 
     /* Go into the root processor. */
